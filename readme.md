@@ -1,5 +1,3 @@
-Will not compile without `secret.h`.  That header has been
-.gitignore'd.
-
-It contains the bot's client_id, client_secret, and token for
-authenticating with Discord servers.
+Will not compile without adding a local copy of `secret.cpp`.  It
+defines client_id, client_secret, and token for authenticating with
+Discord servers.
