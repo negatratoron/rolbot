@@ -150,8 +150,10 @@ int main() {
 		}
 		else if (t == "TYPING_START") {}
 		else if (t == "PRESENCE_UPDATE") {}
+		else if (t == "GUILD_CREATE") {}
 		else if (t == "GUILD_ROLE_UPDATE") {}
 		else if (t == "GUILD_MEMBER_UPDATE") {}
+		else if (t == "MESSAGE_DELETE") {}
 		else if (t == "MESSAGE_CREATE") {
 			jsobject d = o["d"].get<jsobject>();
 			std::string content = d["content"].get<std::string>();
