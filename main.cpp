@@ -163,7 +163,6 @@ int main() {
 	    else if (t == "GUILD_MEMBER_UPDATE") {}
 	    else if (t == "MESSAGE_DELETE") {}
 	    else if (t == "MESSAGE_CREATE") {
-		cout << message << endl;
 		jsobject d = o["d"].get<jsobject>();
 		std::string content = d["content"].get<std::string>();
 		std::string guild_id = d["guild_id"].get<std::string>();
@@ -171,8 +170,6 @@ int main() {
 		jsobject author = d["author"].get<jsobject>();
 		std::string user_id = author["id"].get<std::string>();
 		if (content == "!vinci") {
-		    cout << guild_id << endl;
-		    cout << user_id << endl;
 		    set_roles(guild_id, user_id, "444049408095551489");
 		}
 		if (content == "!alin") {
