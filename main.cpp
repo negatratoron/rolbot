@@ -199,5 +199,7 @@ int main() {
 
     h.run();
 
-    std::this_thread::sleep_for(std::chrono::minutes(10));
+    while (true) {
+	std::this_thread::sleep_for(std::chrono::minutes(10));
+    }
 }
