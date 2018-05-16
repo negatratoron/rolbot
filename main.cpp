@@ -8,6 +8,8 @@
 #include "picojson.h"
 #include <uWS/uWS.h>
 
+#include "taunts.h"
+
 using std::cout;
 using std::endl;
 
@@ -50,13 +52,19 @@ void heartbeatInterval(int interval) {
 	}).detach();
 }
 
-void send_message() {
+void send_message(std::string channel_id, std::string message) {
     CURL* curl = curl_easy_init();
 
-    curl_easy_setopt(curl, CURLOPT_URL, "https://discordapp.com/api/channels/312830174481874945/messages");
+    std::ostringstream url;
+    url << "https://discordapp.com/api/channels/";
+    url << channel_id;
+    url << "/messages";
+    std::string url_str = url.str();
+
+    curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
 
     jsobject msg;
-    msg.insert({"content", json("Message!")});
+    msg.insert({"content", json(message)});
     std::string postdata = json(msg).serialize();
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, postdata.size());
@@ -155,9 +163,11 @@ int main() {
 	    else if (t == "GUILD_MEMBER_UPDATE") {}
 	    else if (t == "MESSAGE_DELETE") {}
 	    else if (t == "MESSAGE_CREATE") {
+		cout << message << endl;
 		jsobject d = o["d"].get<jsobject>();
 		std::string content = d["content"].get<std::string>();
 		std::string guild_id = d["guild_id"].get<std::string>();
+		std::string channel_id = d["channel_id"].get<std::string>();
 		jsobject author = d["author"].get<jsobject>();
 		std::string user_id = author["id"].get<std::string>();
 		if (content == "!vinci") {
@@ -170,6 +180,16 @@ int main() {
 		}
 		if (content == "!cuotl") {
 		    set_roles(guild_id, user_id, "444051594980491264");
+		}
+		try {
+		    size_t taunt_chars;
+		    int taunt_num = stoi(content, &taunt_chars);
+		    if (taunt_num >= 1 && taunt_num <= 100) {
+			send_message(channel_id, taunts[taunt_num - 1]);
+		    }
+		}
+		catch (std::exception e) {
+		    // not a number, or entered number is out of range
 		}
 	    }
 	    else {
