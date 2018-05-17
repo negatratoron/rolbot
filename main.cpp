@@ -45,11 +45,11 @@ void heartbeat(bool dieIfExpectingAck) {
 
 void heartbeatInterval(int interval) {
     std::thread([interval]() {
-	    while (true) {
-		heartbeat(true);
-		std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-	    }
-	}).detach();
+	while (true) {
+	    heartbeat(true);
+	    std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+	}
+    }).detach();
 }
 
 void send_message(std::string channel_id, std::string message) {
@@ -119,81 +119,88 @@ int main() {
     uWS::Hub h;
 
     h.onConnection([](WS ws_, uWS::HttpRequest req) {
-	    std::cout << "Connected" << std::endl;
-	    ws = ws_;
-	});
+	std::cout << "Connected" << std::endl;
+	ws = ws_;
+    });
+
+    h.onDisconnection([](WS ws_, int code, char *message, size_t length) {
+	char* str = new char[length + 1];
+	memcpy(str, message, length);
+	str[length] = 0;
+	cout << "Disconnected" << endl << str << endl;
+    });
 
     int heartbeat_interval;
     h.onMessage([&heartbeat_interval](WS ws, char *message, size_t length, uWS::OpCode opCode) {
-	    json v;
-	    picojson::parse(v, message);
-	    jsobject o = v.get<jsobject>();
-	    std::string t;
-	    if (o["t"].is<std::string>()) {
-		t = o["t"].get<std::string>();
-	    }
-	    int op = o["op"].get<double>();
-	    if (op == 10) {
-		jsobject properties;
-		properties.insert({"$os", json("linux")});
-		properties.insert({"$browser", json("disco")});
-		properties.insert({"$device", json("disco")});
-		jsobject ident;
-		ident.insert({"token", json(token)});
-		ident.insert({"properties", json(properties)});
-		jsobject pkt;
-		pkt.insert({"op", json(2.0)});
-		pkt.insert({"d", json(ident)});
-		ws->send(json(pkt).serialize().c_str());
+	json v;
+	picojson::parse(v, message);
+	jsobject o = v.get<jsobject>();
+	std::string t;
+	if (o["t"].is<std::string>()) {
+	    t = o["t"].get<std::string>();
+	}
+	int op = o["op"].get<double>();
+	if (op == 10) {
+	    jsobject properties;
+	    properties.insert({"$os", json("linux")});
+	    properties.insert({"$browser", json("disco")});
+	    properties.insert({"$device", json("disco")});
+	    jsobject ident;
+	    ident.insert({"token", json(token)});
+	    ident.insert({"properties", json(properties)});
+	    jsobject pkt;
+	    pkt.insert({"op", json(2.0)});
+	    pkt.insert({"d", json(ident)});
+	    ws->send(json(pkt).serialize().c_str());
 
-		jsobject d = o["d"].get<jsobject>();
-		heartbeat_interval = d["heartbeat_interval"].get<double>();
-		heartbeatInterval(heartbeat_interval);
+	    jsobject d = o["d"].get<jsobject>();
+	    heartbeat_interval = d["heartbeat_interval"].get<double>();
+	    heartbeatInterval(heartbeat_interval);
+	}
+	else if (op == 11) {
+	    expected_heartbeat_ack -= 1;
+	}
+	else if (t == "READY") {
+	    cout << "ready" << endl;
+	}
+	else if (t == "TYPING_START") {}
+	else if (t == "PRESENCE_UPDATE") {}
+	else if (t == "GUILD_CREATE") {}
+	else if (t == "GUILD_ROLE_UPDATE") {}
+	else if (t == "GUILD_MEMBER_UPDATE") {}
+	else if (t == "MESSAGE_DELETE") {}
+	else if (t == "MESSAGE_CREATE") {
+	    jsobject d = o["d"].get<jsobject>();
+	    std::string content = d["content"].get<std::string>();
+	    std::string guild_id = d["guild_id"].get<std::string>();
+	    std::string channel_id = d["channel_id"].get<std::string>();
+	    jsobject author = d["author"].get<jsobject>();
+	    std::string user_id = author["id"].get<std::string>();
+	    if (content == "!vinci") {
+		set_roles(guild_id, user_id, "444049408095551489");
 	    }
-	    else if (op == 11) {
-		expected_heartbeat_ack -= 1;
+	    if (content == "!alin") {
+		set_roles(guild_id, user_id, "444051164778987530");
 	    }
-	    else if (t == "READY") {
-		cout << "ready" << endl;
+	    if (content == "!cuotl") {
+		set_roles(guild_id, user_id, "444051594980491264");
 	    }
-	    else if (t == "TYPING_START") {}
-	    else if (t == "PRESENCE_UPDATE") {}
-	    else if (t == "GUILD_CREATE") {}
-	    else if (t == "GUILD_ROLE_UPDATE") {}
-	    else if (t == "GUILD_MEMBER_UPDATE") {}
-	    else if (t == "MESSAGE_DELETE") {}
-	    else if (t == "MESSAGE_CREATE") {
-		jsobject d = o["d"].get<jsobject>();
-		std::string content = d["content"].get<std::string>();
-		std::string guild_id = d["guild_id"].get<std::string>();
-		std::string channel_id = d["channel_id"].get<std::string>();
-		jsobject author = d["author"].get<jsobject>();
-		std::string user_id = author["id"].get<std::string>();
-		if (content == "!vinci") {
-		    set_roles(guild_id, user_id, "444049408095551489");
-		}
-		if (content == "!alin") {
-		    set_roles(guild_id, user_id, "444051164778987530");
-		}
-		if (content == "!cuotl") {
-		    set_roles(guild_id, user_id, "444051594980491264");
-		}
-		try {
-		    size_t taunt_chars;
-		    int taunt_num = stoi(content, &taunt_chars);
-		    if (taunt_num >= 1 && taunt_num <= 100) {
-			send_message(channel_id, taunts[taunt_num - 1]);
-		    }
-		}
-		catch (std::exception e) {
-		    // not a number, or entered number is out of range
+	    try {
+		size_t taunt_chars;
+		int taunt_num = stoi(content, &taunt_chars);
+		if (taunt_num >= 1 && taunt_num <= 100) {
+		    send_message(channel_id, taunts[taunt_num - 1]);
 		}
 	    }
-	    else {
-		cout << "Unrecognized message." << endl;
-		cout << message << endl;
+	    catch (std::exception e) {
+		// not a number, or entered number is out of range
 	    }
-	});
+	}
+	else {
+	    cout << "Unrecognized message." << endl;
+	    cout << message << endl;
+	}
+    });
 
     h.connect("wss://gateway.discord.gg/?v=6&encoding=json");
 
