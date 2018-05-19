@@ -24,17 +24,13 @@ extern std::string token;
 int heartbeat_sequence_num = 0;
 int expected_heartbeat_ack = 0;
 
-WS ws;
-
-void heartbeat(bool dieIfExpectingAck) {
-    if (dieIfExpectingAck) {
-	if (expected_heartbeat_ack) {
-	    std::cout << "Expected heartbeat ack." << std::endl;
-	    // exit(1);
-	}
-	else {
-	    expected_heartbeat_ack += 1;
-	}
+void heartbeat(WS ws) {
+    if (expected_heartbeat_ack) {
+	std::cout << "Expected heartbeat ack." << std::endl;
+	ws->close(500);
+    }
+    else {
+	expected_heartbeat_ack += 1;
     }
     jsobject pkt;
     pkt.insert({"op", json(1.0)});
@@ -43,10 +39,10 @@ void heartbeat(bool dieIfExpectingAck) {
     heartbeat_sequence_num += 1;
 }
 
-void heartbeatInterval(int interval) {
-    std::thread([interval]() {
+void heartbeatInterval(WS ws, int interval) {
+    std::thread([ws, interval]() {
 	while (true) {
-	    heartbeat(true);
+	    heartbeat(ws);
 	    std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 	}
     }).detach();
@@ -118,9 +114,8 @@ void set_roles(std::string guild_id, std::string user_id, std::string role) {
 int main() {
     uWS::Hub h;
 
-    h.onConnection([](WS ws_, uWS::HttpRequest req) {
+    h.onConnection([](WS ws, uWS::HttpRequest req) {
 	std::cout << "Connected" << std::endl;
-	ws = ws_;
     });
 
     h.onDisconnection([](WS ws_, int code, char *message, size_t length) {
@@ -155,7 +150,7 @@ int main() {
 
 	    jsobject d = o["d"].get<jsobject>();
 	    heartbeat_interval = d["heartbeat_interval"].get<double>();
-	    heartbeatInterval(heartbeat_interval);
+	    heartbeatInterval(ws, heartbeat_interval);
 	}
 	else if (op == 11) {
 	    expected_heartbeat_ack -= 1;
@@ -202,11 +197,9 @@ int main() {
 	}
     });
 
-    h.connect("wss://gateway.discord.gg/?v=6&encoding=json");
-
-    h.run();
-
     while (true) {
-	std::this_thread::sleep_for(std::chrono::minutes(10));
+	h.connect("wss://gateway.discord.gg/?v=6&encoding=json");
+	h.run();
+	std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
