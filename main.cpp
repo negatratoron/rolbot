@@ -111,6 +111,20 @@ void set_roles(std::string guild_id, std::string user_id, std::string role) {
     curl_slist_free_all(headers);
 }
 
+std::string identify_packet() {
+    jsobject properties;
+    properties.insert({"$os", json("linux")});
+    properties.insert({"$browser", json("disco")});
+    properties.insert({"$device", json("disco")});
+    jsobject ident;
+    ident.insert({"token", json(token)});
+    ident.insert({"properties", json(properties)});
+    jsobject pkt;
+    pkt.insert({"op", json(2.0)});
+    pkt.insert({"d", json(ident)});
+    return json(pkt).serialize();
+}
+
 int main() {
     uWS::Hub h;
 
@@ -135,18 +149,15 @@ int main() {
 	    t = o["t"].get<std::string>();
 	}
 	int op = o["op"].get<double>();
-	if (op == 10) {
-	    jsobject properties;
-	    properties.insert({"$os", json("linux")});
-	    properties.insert({"$browser", json("disco")});
-	    properties.insert({"$device", json("disco")});
-	    jsobject ident;
-	    ident.insert({"token", json(token)});
-	    ident.insert({"properties", json(properties)});
-	    jsobject pkt;
-	    pkt.insert({"op", json(2.0)});
-	    pkt.insert({"d", json(ident)});
-	    ws->send(json(pkt).serialize().c_str());
+	if (op == 9) {
+	    cout << "invalid session" << endl;
+	    std::this_thread::sleep_for(std::chrono::seconds(5));
+	    std::string identify = identify_packet();
+	    ws->send(identify.c_str());
+	}
+	else if (op == 10) {
+	    std::string identify = identify_packet();
+	    ws->send(identify.c_str());
 
 	    jsobject d = o["d"].get<jsobject>();
 	    heartbeat_interval = d["heartbeat_interval"].get<double>();
@@ -200,6 +211,6 @@ int main() {
     while (true) {
 	h.connect("wss://gateway.discord.gg/?v=6&encoding=json");
 	h.run();
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+	std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
