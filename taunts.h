@@ -63,7 +63,7 @@ std::string taunts[] = {
     "Consider it taken care of.",
     "Sounds like a plan.",
     "Aaaaaaagh! The humanity!",
-    "They keep on rising.",
+    "They keep on rising!!!!!!",
     "Su-who? Sawu!",
     "Hey! Dominate THIS!",
     "Dominance! Dominance! Dominance!",
