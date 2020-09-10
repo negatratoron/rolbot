@@ -141,8 +141,12 @@ int main() {
 
     int heartbeat_interval;
     h.onMessage([&heartbeat_interval](WS ws, char *message, size_t length, uWS::OpCode opCode) {
+      std::string str;
+      str.resize(length + 1);
+      memcpy(&str[0], message, length);
+      str[length] = 0;
 	json v;
-	picojson::parse(v, message);
+	picojson::parse(v, str);
 	jsobject o = v.get<jsobject>();
 	std::string t;
 	if (o["t"].is<std::string>()) {
