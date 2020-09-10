@@ -17,6 +17,7 @@ using json = picojson::value;
 using jsobject = json::object;
 using WS = uWS::WebSocket<uWS::CLIENT>*;
 
+// defined in secret.cpp
 extern std::string client_id;
 extern std::string client_secret;
 extern std::string token;
@@ -103,7 +104,8 @@ void set_roles(std::string guild_id, std::string user_id, std::string role) {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, blah);
 
     curl_slist *headers = nullptr;
-    headers = curl_slist_append(headers, "Authorization: Bot NDQ0MDU4MTY2MTMzNzg0NTc2.DdauQQ.NswV6T8IAEUl7sRLqmft0jeMtm4");
+    std::string auth_header = "Authorization: Bot " + token;
+    headers = curl_slist_append(headers, auth_header.c_str());
     headers = curl_slist_append(headers, "Content-Type: application/json");
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     cout << int(curl_easy_perform(curl)) << endl;
