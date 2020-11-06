@@ -10,9 +10,6 @@
 
 #include "taunts.h"
 
-using std::cout;
-using std::endl;
-
 using json = picojson::value;
 using jsobject = json::object;
 using WS = uWS::WebSocket<uWS::CLIENT>*;
@@ -73,7 +70,7 @@ void send_message(std::string channel_id, std::string message) {
     headers = curl_slist_append(headers, "Authorization: Bot NDQ0MDU4MTY2MTMzNzg0NTc2.DdauQQ.NswV6T8IAEUl7sRLqmft0jeMtm4");
     headers = curl_slist_append(headers, "Content-Type: application/json");
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    cout << int(curl_easy_perform(curl)) << endl;
+    std::cout << int(curl_easy_perform(curl)) << std::endl;
 
     curl_slist_free_all(headers);
 }
@@ -108,7 +105,7 @@ void set_roles(std::string guild_id, std::string user_id, std::string role) {
     headers = curl_slist_append(headers, auth_header.c_str());
     headers = curl_slist_append(headers, "Content-Type: application/json");
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    cout << int(curl_easy_perform(curl)) << endl;
+    std::cout << int(curl_easy_perform(curl)) << std::endl;
 
     curl_slist_free_all(headers);
 }
@@ -138,7 +135,7 @@ int main() {
 	char* str = new char[length + 1];
 	memcpy(str, message, length);
 	str[length] = 0;
-	cout << "Disconnected" << endl << str << endl;
+        std::cout << "Disconnected" << std::endl << str << std::endl;
     });
 
     int heartbeat_interval;
@@ -156,7 +153,7 @@ int main() {
 	}
 	int op = o["op"].get<double>();
 	if (op == 9) {
-	    cout << "invalid session" << endl;
+            std::cout << "invalid session" << std::endl;
 	    std::this_thread::sleep_for(std::chrono::seconds(5));
 	    std::string identify = identify_packet();
 	    ws->send(identify.c_str());
@@ -173,7 +170,7 @@ int main() {
 	    expected_heartbeat_ack -= 1;
 	}
 	else if (t == "READY") {
-	    cout << "ready" << endl;
+            std::cout << "ready" << std::endl;
 	}
 	else if (t == "TYPING_START") {}
 	else if (t == "PRESENCE_UPDATE") {}
@@ -209,8 +206,8 @@ int main() {
 	    }
 	}
 	else {
-	    cout << "Unrecognized message." << endl;
-	    cout << message << endl;
+            std::cout << "Unrecognized message." << std::endl;
+            std::cout << message << std::endl;
 	}
     });
 
