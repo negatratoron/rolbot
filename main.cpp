@@ -243,7 +243,6 @@ class App : public WsClientCallback {
   }
   void onReceiveMessage(std::string *message_ptr) override {
     auto const &str = *message_ptr;
-    std::cout << "Received message: " << str << std::endl;
 
     json v;
     picojson::parse(v, str);

@@ -84,7 +84,6 @@ int WsRaccoonClient::on_websocket_callback(struct lws *wsi,
             break;
         }
         case LWS_CALLBACK_CLIENT_WRITEABLE: {
-            std::cout << "writeable" << std::endl;
             if (!self->messageQueue.empty()) {
                 // Send a message in the message queue
                 std::string *message = self->messageQueue.pop();
