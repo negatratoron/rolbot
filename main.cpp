@@ -27,14 +27,20 @@ extern std::string rr_message;
 extern std::string vinci_emoji_name;
 extern std::string alin_emoji_name;
 extern std::string cuotl_emoji_name;
+extern std::string events_emoji_name;
+extern std::string user_patch_emoji_name;
 
 extern std::string vinci_emoji;
 extern std::string alin_emoji;
 extern std::string cuotl_emoji;
+extern std::string events_emoji;
+extern std::string user_patch_emoji;
 
 extern std::string vinci_role;
 extern std::string alin_role;
 extern std::string cuotl_role;
+extern std::string events_role;
+extern std::string user_patch_role;
 
 WsRaccoonClient *wsClient;
 
@@ -341,6 +347,16 @@ class App : public WsClientCallback {
           add_role(roles, cuotl_role);
           set_roles(guild_id, user_id, roles);
         }
+        else if (events_emoji == emoji_id) {
+          auto roles = get_roles(guild_id, user_id);
+          add_role(roles, events_role);
+          set_roles(guild_id, user_id, roles);
+        }
+        else if (user_patch_emoji == emoji_id) {
+          auto roles = get_roles(guild_id, user_id);
+          add_role(roles, user_patch_role);
+          set_roles(guild_id, user_id, roles);
+        }
       }
     }
     else if (t == "MESSAGE_REACTION_REMOVE") {
@@ -363,6 +379,16 @@ class App : public WsClientCallback {
         else if (cuotl_emoji == emoji_id) {
           auto roles = get_roles(guild_id, user_id);
           remove_role(roles, cuotl_role);
+          set_roles(guild_id, user_id, roles);
+        }
+        else if (events_emoji == emoji_id) {
+          auto roles = get_roles(guild_id, user_id);
+          remove_role(roles, events_role);
+          set_roles(guild_id, user_id, roles);
+        }
+        else if (user_patch_emoji == emoji_id) {
+          auto roles = get_roles(guild_id, user_id);
+          remove_role(roles, user_patch_role);
           set_roles(guild_id, user_id, roles);
         }
       }
