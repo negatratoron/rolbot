@@ -314,15 +314,17 @@ class App : public WsClientCallback {
 
         set_roles(guild_id, user_id, roles);
       }
-      try {
-        size_t taunt_chars;
-        int taunt_num = stoi(content, &taunt_chars);
-        if (taunt_num >= 1 && taunt_num <= 100) {
-          send_message(channel_id, taunts[taunt_num - 1]);
+      size_t taunt_char = content.find_first_not_of("0123456789");
+      if (taunt_char == std::string::npos) {
+        try {
+          int taunt_num = std::stoi(content);
+          if (taunt_num >= 1 && taunt_num <= 100) {
+            send_message(channel_id, taunts[taunt_num - 1]);
+          }
         }
-      }
-      catch (std::exception e) {
-        // not a number, or entered number is out of range
+        catch (std::exception e) {
+          // out of range
+        }
       }
     }
     else if (t == "MESSAGE_REACTION_ADD") {
